@@ -15,6 +15,6 @@ model=xgb.XGBCLassifier(n_estimators=200, max_depth=5, tree_method='gpu_hist')
 
 init_mod=model.fit(X_train,y_train)
 
-y_pred=init_model.predict(X_test)
+y_pred=init_mod.predict(X_test)
 
 print("acc=",accuracy_score(y_test,y_pred_))
