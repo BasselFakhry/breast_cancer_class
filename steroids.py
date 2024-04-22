@@ -30,7 +30,6 @@ summary_df = pd.DataFrame(summary)
 
 print(summary_df)
 
-"""
 
 X_train, X_test, y_train, y_test =train_test_split(X,y, test_size=0.2)
 dtrain=xgb.DMatrix(X_train, label=y_train)
@@ -62,7 +61,6 @@ print(f"{labels[2]}: {fn}, {labels[3]}: {tp}")
 
 # Print accuracy score
 print("Accuracy Score:", accuracy_score(y_test,predictions))
-"""
 hyper_params={
 	'booster':['gbtree'],
 	'device':'cuda',
