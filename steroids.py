@@ -108,14 +108,14 @@ X_train, X_test, y_train, y_test =train_test_split(X,y, test_size=0.2)
 
 dtrain=xgb.DMatrix(X_train, label=y_train)
 dtest=xgb.DMatrix(X_test, label=y_test)
-# params={
-# 	'objective':'multi:softmax',
-# 	'num_class':4,
-# 	'tree_method':'gpu_hist',
-# 	'device':'cuda'
-# }
-# num_boost_round=110
-# model=xgb.train(params, dtrain, num_boost_round=num_boost_round)
+params={
+	'objective':'multi:softmax',
+	'num_class':4,
+	'tree_method':'gpu_hist',
+	'device':'cuda'
+}
+num_boost_round=110
+model=xgb.train(params, dtrain, num_boost_round=num_boost_round)
 
 # predictions=model.predict(dtest)
 
@@ -138,22 +138,24 @@ dtest=xgb.DMatrix(X_test, label=y_test)
 
 
 hyper_params={
-	'booster':['gbtree'],
+    'objective':['multi:softmax','multi:softprob'],
+    'eval_metric':['rmse','rmsle','logloss'],
 	'eta':[0.01,0.1,0.3,0.5,0.8,0.9],
 	'gamma':[0.001,0.05,0.1,0.2,0.5],
 	'max_depth':[3,6,9,12,15,21],
 	'n_estimators':[100,200,300],
+    'num_parallel_tree':[1,3,5,10,20,30],
 	'subsample':[0.3,0.5,0.8],
 	'sampling_method':['uniform','gradient_based'],
-	'lambda':[0.1,1,5,7,10,15],
-	'tree_method':['gpu_hist','approx'],
-	'updater':['grow_colmaker','grow_gpu_hist','grow_gpu_approx','prune'],
-	'grow_policy':['depthwise','lossguide']
+	'lambda':[0.1, 0.5 , 1, 5, 7,10],
+    'alpha':[0.01,0.05,0.1,0.3,0.5,0.8,1],
+	'tree_method':['hist','approx'],
+	'grow_policy':['depthwise','lossguide'],
+    'updater':['grow_histmaker','grow_quantile_histmaker','grow_hist']
 
 }
 
-# Define the XGBoost classifier
-xgb_clf = xgb.XGBClassifier(objective='multi:softmax', num_class=4,device='cuda')
+xgb_clf = xgb.XGBClassifier(objective='multi:softmax', num_class=4,device='cuda',process_type='update')
 
 # Create the RandomizedSearchCV object
 random_search = RandomizedSearchCV(estimator=xgb_clf, param_distributions=hyper_params, n_iter=100, scoring='accuracy', cv=5)
