@@ -1,9 +1,5 @@
 import os
 import xgboost as xgb
-<<<<<<< HEAD
-=======
-import deep_wide
->>>>>>> 1b31a8ce324f11a33121f1d8c6cc8756c451905b
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
