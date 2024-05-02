@@ -1,14 +1,16 @@
-import pandas as pd
+import os
 import xgboost as xgb
-from sklearn.model_selection import train_test_split, RandomizedSearchCV
-from sklearn.metrics import confusion_matrix, accuracy_score
 import numpy as np
-import matplotlib.pyplot as plt
+import pandas as pd
 from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
+
+
 
 def data_preprocess(df):
     y = df["cancer_type"]
-    label_encoder = LabelEncoder()
+    label_encoder = LabelEncoder();
     y  = label_encoder.fit_transform(y)
     y = pd.Series(y)
     df = df.drop('cancer_type', axis = 1)
@@ -97,75 +99,15 @@ def data_preprocess(df):
     
     return df,y
 
-
-df=pd.read_csv('data.csv')
+df=pd.read_csv("data.csv")
 X, y=data_preprocess(df)
 
+X_train, X_test, y_train, y_test=train_test_split(X,y,test_size=0.2)
 
+model=xgb.XGBClassifier(n_estimators=200, max_depth=5, tree_method='gpu_hist',random_state=42)
 
-X_train, X_test, y_train, y_test =train_test_split(X,y, test_size=0.2)
+init_mod=model.fit(X_train,y_train)
 
+y_pred=init_mod.predict(X_test)
 
-dtrain=xgb.DMatrix(X_train, label=y_train)
-dtest=xgb.DMatrix(X_test, label=y_test)
-params={
-	'objective':'multi:softmax',
-	'num_class':4,
-	'tree_method':'gpu_hist',
-	'device':'cuda'
-}
-num_boost_round=110
-model=xgb.train(params, dtrain, num_boost_round=num_boost_round)
-
-# predictions=model.predict(dtest)
-
-# cm = confusion_matrix(y_test, predictions)
-
-# tn =cm[0,0]
-# fp=cm[0,1]
-# fn=cm[1,0]
-# tp=cm[1,1]
-
-# labels = ['True pos','False pos','true neg','false neg']
-
-# print("Confusion matrix: ")
-# print(f"{labels[0]}: {tn}, {labels[1]}: {fp}")
-# print(f"{labels[2]}: {fn}, {labels[3]}: {tp}")
-
-
-# Print accuracy score
-#print("Accuracy Score:", accuracy_score(y_test,predictions))
-
-
-hyper_params={
-    'objective':['multi:softmax','multi:softprob'],
-    'eval_metric':['rmse','rmsle','logloss'],
-	'eta':[0.01,0.1,0.3,0.5,0.8,0.9],
-	'gamma':[0.001,0.05,0.1,0.2,0.5],
-	'max_depth':[3,6,9,12,15,21],
-	'n_estimators':[100,200,300],
-    'num_parallel_tree':[1,3,5,10,20,30],
-	'subsample':[0.3,0.5,0.8],
-	'sampling_method':['uniform','gradient_based'],
-	'lambda':[0.1, 0.5 , 1, 5, 7,10],
-    'alpha':[0.01,0.05,0.1,0.3,0.5,0.8,1],
-	'tree_method':['hist','approx'],
-	'grow_policy':['depthwise','lossguide'],
-    'updater':['grow_histmaker','grow_quantile_histmaker','grow_hist']
-
-}
-
-xgb_clf = xgb.XGBClassifier(objective='multi:softmax', num_class=4,device='cuda',process_type='update')
-
-# Create the RandomizedSearchCV object
-random_search = RandomizedSearchCV(estimator=xgb_clf, param_distributions=hyper_params, n_iter=100, scoring='accuracy', cv=5)
-
-# Perform the random search
-random_search.fit(X_train,y_train)
-
-# Get the best parameters and best score
-best_params = random_search.best_params_
-best_score = random_search.best_score_
-
-print("Best Parameters:", best_params)
-print("Best Score:", best_score)
+print("acc=",accuracy_score(y_test,y_pred))
